@@ -11,13 +11,20 @@ struct Movie: Codable, Identifiable {
     let id: Int
     let title: String
     let overview: String
+    let backdropPath: String?
     let posterPath: String?
 
+    var fullBackdropPath: URL? {
+        return constructImageURL(imagePath: backdropPath)
+    }
+
     var fullPosterPath: URL? {
-        if let posterPath = posterPath, let posterURL = URL(string: "https://image.tmdb.org/t/p/w500" + posterPath) {
-            return posterURL
-        }
-        return nil
+        return constructImageURL(imagePath: posterPath)
+    }
+
+    private func constructImageURL(imagePath: String?) -> URL? {
+        guard let imagePath = imagePath else { return nil }
+        return URL(string: "https://image.tmdb.org/t/p/w500" + imagePath)
     }
 }
 
@@ -89,36 +96,28 @@ struct MovieCell: View {
 
     var body: some View {
         HStack {
-            if let posterPath = movie.fullPosterPath {
-                AsyncImage(url: posterPath) { phase in
-                    switch phase {
-                    case .empty:
-                        Image(systemName: "photo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                    case .failure:
-                        Image(systemName: "exclamationmark.square")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        fatalError()
-                    }
+            AsyncImage(url: movie.fullBackdropPath ?? URL(string: "")) { phase in
+                switch phase {
+                case .empty:
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 50)
+                        .foregroundColor(.gray)
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 50)
+                case .failure:
+                    Image(systemName: "exclamationmark.square")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 50)
+                        .foregroundColor(.gray)
+                @unknown default:
+                    fatalError()
                 }
-            } else {
-                Image(systemName: "photo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.gray)
             }
 
             VStack(alignment: .leading) {
@@ -137,27 +136,25 @@ struct MovieDetailView: View {
 
     var body: some View {
         VStack {
-            if let posterPath = movie.fullPosterPath {
-                AsyncImage(url: posterPath) { phase in
-                    switch phase {
-                    case .empty:
-                        Image(systemName: "photo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 200)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 200)
-                    case .failure:
-                        Image(systemName: "exclamationmark.square")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 200)
-                    @unknown default:
-                        fatalError()
-                    }
+            AsyncImage(url: movie.fullBackdropPath ?? URL(string: "")) { phase in
+                switch phase {
+                case .empty:
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 200)
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 200)
+                case .failure:
+                    Image(systemName: "exclamationmark.square")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 200)
+                @unknown default:
+                    fatalError()
                 }
             }
 
@@ -174,12 +171,6 @@ struct MovieDetailView: View {
             .padding()
         }
         .navigationBarTitle(movie.title)
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        MovieListView()
     }
 }
 
