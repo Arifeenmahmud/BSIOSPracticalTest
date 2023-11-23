@@ -13,8 +13,8 @@ struct Movie: Codable {
     let posterPath: String?
 
     var fullPosterPath: URL? {
-        if let posterPath = posterPath, let posterURL = URL(string: "https://image.tmdb.org/t/p/w500" + posterPath) {
-            return posterURL
+        if let posterPath = posterPath {
+            return URL(string: "https://image.tmdb.org/t/p/w500" + posterPath)
         }
         return nil
     }
